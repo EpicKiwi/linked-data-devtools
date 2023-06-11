@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linked Data DevTools</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="panel.js" type="module"></script>
+    <script src="components/iri.js" type="module"></script>
+
+    <meta name="prefix" content="rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+    <meta name="prefix" content="rdfa: http://www.w3.org/ns/rdfa#" />
+    <meta name="prefix" content="schema: http://schema.org/" />
+    <meta name="prefix" content="schema: https://schema.org/" />
+</head>
+<body>
+
+    <template id="entity-template">
+        <article class="entity">
+            <h1><ext-iri class="entity-id"></ext-iri></h1>
+            <div class="attributes"></div>
+        </article>
+    </template>
+
+    <template id="attribute-template">
+        <div class="predicate-container">
+            <ext-iri class="predicate"></ext-iri>
+        </div>
+
+        <div class="object-container">
+            <ext-iri class="object"></ext-iri>
+        </div>
+        
+        <p class="object object-container"></p>
+    </template>
+
+    <main id="quads"></main>
+
+    <aside>
+        <nav class="filler" id="breadcrumb"></nav>
+        <hr>
+        <p><span id="triple-count">0</span> triples</p>
+        <hr>
+        <p>RDFa</p>
+    </aside>
+
+</body>
+</html>

@@ -1,0 +1,112 @@
+:root {
+  font: message-box;
+  font-size: 11px;
+
+  --background-color: #f9f9fa;
+  --border-color: #e0e0e2;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    align-items: stretch;
+
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+
+    background: var(--background-color);
+}
+
+
+body > main {
+    flex: 1;
+}
+
+/* Aside toolbar */
+
+aside {
+    background: var(--background-color);
+    padding: 4px;
+    border-color: var(--border-color);
+    border-style: solid;
+    border-width: 0;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: end;
+    gap: 4px;
+}
+
+aside:last-child {
+    border-top-width: 1px;
+}
+
+aside > * {
+    margin: 0;
+    padding: 0;
+}
+
+aside > hr {
+    width: 0;
+    height: 100%;
+    border: none;
+    border-right: 1px solid var(--border-color);
+}
+
+aside > .filler {
+    flex: 1;
+}
+
+/* main */
+
+main {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.entity {
+    background: white;
+    margin: 8px;
+    border: solid 1px var(--border-color);
+    padding: 8px;
+}
+
+.entity h1 {
+    margin: 0;
+    font-weight: normal;
+}
+
+.entity .attributes {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 1fr 2fr;
+    grid-auto-rows: min-content;
+    margin-top: 1em;
+}
+
+.entity.selected {
+    outline: 3px solid #0060df;
+}
+
+.entity .attributes > * {
+    margin: 0;
+}
+
+.entity .attributes .predicate-container {
+    grid-column: 1;
+}
+
+.entity .attributes .object-container {
+    grid-column: 2;
+}
+
+.entity .attributes .predicate {
+    color: #0074e8;
+}
+
+.entity .attributes ext-iri.object {
+    color: #dd00a9;
+}
