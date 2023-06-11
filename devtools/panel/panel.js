@@ -3,6 +3,21 @@ import { appendQuad } from "./ui.js";
 const w = browser.devtools.inspectedWindow;
 const windowGlobal = `__${browser.runtime.id}`;
 
+async function initHighlighting(){
+    await w.eval(`(() => {
+        const styleEl = document.createElement("style")
+        styleEl.innerHTML = "body.__rdfa_highlight [resource]:not([property]), body.__rdfa_highlight [resource][typeof] {background: rgba(221, 0, 169, 0.25) !important;}"
+        document.head.appendChild(styleEl)
+    })()`);
+}
+
+async function toggleHighlight(){
+    let result = (await w.eval(`document.body.classList.toggle("__rdfa_highlight")`))[0];
+    document.getElementById("highlight").classList.toggle("active", result)
+}
+
+document.getElementById("highlight").addEventListener("click", toggleHighlight)
+
 async function initQuadParsing() {
     document.getElementById("quads").innerHTML = "";
     document.getElementById("triple-count").textContent = 0;
@@ -47,8 +62,6 @@ async function initQuadParsing() {
   });
 }
 
-initQuadParsing();
-
 document.getElementById("quads")
   .addEventListener("click-iri", (e) => {
     let el = document.querySelector(`[data-iri="${e.target.href}"]`);
@@ -60,7 +73,10 @@ document.getElementById("quads")
 
 browser.devtools.network.onNavigated.addListener(() => {
   initQuadParsing();
+  initHighlighting();
 });
+initQuadParsing();
+initHighlighting();
 
 browser.devtools.panels.elements.onSelectionChanged.addListener(() => {
     w.eval(`(() => {

@@ -18,6 +18,8 @@ a {
 </style>
 <a id="link" target="_blank"></a>`
 
+let PREFIXES = null;
+
 class IRIElement extends HTMLElement {
 
     #href = null;
@@ -51,11 +53,13 @@ class IRIElement extends HTMLElement {
     }
 
     loadPrefixes(){
-        this.prefixes = {}
+        if(PREFIXES) return;
+
+        PREFIXES = {}
 
         for(let el of document.querySelectorAll(`meta[name="prefix"]`)){
             let [name, prefix] = el.getAttribute("content").split(" ", 2)
-            this.prefixes[prefix] = name
+            PREFIXES[prefix] = name
         }
     }
 
@@ -72,7 +76,7 @@ class IRIElement extends HTMLElement {
         } else if(this.href.startsWith(inspectedUrl) && this.href != inspectedUrl){
             result = result.substring(inspectedUrl.length)
         } else {
-            let prefix = Object.entries(this.prefixes)
+            let prefix = Object.entries(PREFIXES)
                 .find(([key, value]) => key != this.href && this.href.startsWith(key))
 
             if(prefix){
