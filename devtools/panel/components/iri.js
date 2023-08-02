@@ -83,7 +83,7 @@ class IRIElement extends HTMLElement {
 
             let value = document.createElement("span")
             value.textContent = this.href;
-            result.appendChild(blank)
+            result.appendChild(value)
 
         } else if(this.href == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"){
             result = document.createTextNode("a")
