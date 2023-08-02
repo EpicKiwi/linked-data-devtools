@@ -18,6 +18,26 @@ async function toggleHighlight(){
 
 document.getElementById("highlight").addEventListener("click", toggleHighlight)
 
+function initPrefixes(prefixes){
+  for(let it of document.querySelectorAll(`meta[name="prefix"`)){
+    let [name, value] = it.getAttribute("content").split(" ", 2);
+
+    if(!prefixes[name] || prefixes[name] != value){
+      it.remove()
+    }
+  }
+
+  for(let [name, value] of Object.entries(prefixes)){
+    let existing = document.querySelector(`meta[name="prefix"][content="${name} ${value}"]`)
+    if(!existing) {
+      let meta = document.createElement("meta")
+      meta.name = "prefix"
+      meta.content = `${name} ${value}`
+      document.head.appendChild(meta)
+    }
+  }
+}
+
 async function initQuadParsing() {
     document.getElementById("quads").innerHTML = "";
     document.getElementById("triple-count").textContent = 0;
@@ -27,6 +47,10 @@ async function initQuadParsing() {
 
   async function isParsing() {
     return (await w.eval(`window["${windowGlobal}"].parsingInProgress`))[0];
+  }
+
+  async function getPrefixes() {
+    return (await w.eval(`window["${windowGlobal}"].prefixes`))[0];
   }
 
   async function popQuads() {
@@ -44,6 +68,17 @@ async function initQuadParsing() {
     if (parsing === undefined || parsing) {
       setTimeout(() => pollQuads(cb), 300);
     }
+    
+    let prefixesInit = false;
+    if(!prefixesInit){
+      getPrefixes().then(p => {
+        if(!prefixesInit && p){
+          initPrefixes(p)
+          prefixesInit = true;
+        }
+      })
+    }
+
     popQuads().then((quads) => {
       if (quads) {
         for (let q of quads) {
@@ -54,7 +89,6 @@ async function initQuadParsing() {
   }
 
   let tripleCount = 0;
-
   pollQuads((q) => {
     tripleCount++;
     document.getElementById("triple-count").textContent = tripleCount;
