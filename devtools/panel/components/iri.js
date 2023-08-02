@@ -64,6 +64,10 @@ class IRIElement extends HTMLElement {
     }
 
     async updateContent(){
+        if(!this.href) {
+            return;
+        }
+
         const inspectedUrl = (await browser.devtools.inspectedWindow
             .eval("window.location.toString()"))[0];
         

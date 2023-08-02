@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="panel.js" type="module"></script>
     <script src="components/iri.js" type="module"></script>
+    <script src="components/literal.js" type="module"></script>
 
     <meta name="prefix" content="rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
     <meta name="prefix" content="rdfa: http://www.w3.org/ns/rdfa#" />
@@ -31,7 +32,9 @@
             <ext-iri class="object"></ext-iri>
         </div>
         
-        <p class="object object-container"></p>
+        <p class="object-container">
+            <ext-literal class="object"></ext-literal>
+        </p>
     </template>
 
     <main id="quads"></main>

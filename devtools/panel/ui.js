@@ -9,11 +9,18 @@ function createAttributeElement(quad){
     el.querySelector(".predicate").href = quad.predicate.value
 
     if(quad.object.termType == "Literal"){
-        el.querySelector("p.object").textContent = quad.object.value
+        let literalEl = el.querySelector("ext-literal.object");
+        if(quad.object.language){
+            literalEl.language = quad.object.language
+        }
+        if(quad.object.datatype?.value){
+            literalEl.type = quad.object.datatype?.value
+        }
+        literalEl.textContent = quad.object.value
         el.querySelector("ext-iri.object").closest(".object-container").remove()
     } else {
         el.querySelector("ext-iri.object").href = quad.object.value
-        el.querySelector("p.object").closest(".object-container").remove()
+        el.querySelector("ext-literal.object").closest(".object-container").remove()
     }
 
     return el;
