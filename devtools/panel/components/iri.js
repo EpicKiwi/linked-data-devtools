@@ -71,26 +71,39 @@ class IRIElement extends HTMLElement {
         const inspectedUrl = (await browser.devtools.inspectedWindow
             .eval("window.location.toString()"))[0];
         
-        let result = this.href
+        let result = document.createTextNode(this.href)
 
         if(this.href.startsWith("df_")){
-            result = `<span class="blank">[blank node] </span><span>${this.href}</span>`
+            result = document.createDocumentFragment()
+            
+            let blank = document.createElement("span")
+            blank.textContent = "[blank node] ";
+            blank.classList.add("blank")
+            result.appendChild(blank)
+
+            let value = document.createElement("span")
+            value.textContent = this.href;
+            result.appendChild(blank)
+
         } else if(this.href == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"){
-            result = "a"
+            result = document.createTextNode("a")
         } else if(this.href.startsWith(inspectedUrl) && this.href != inspectedUrl){
-            result = result.substring(inspectedUrl.length)
+            result = document.createTextNode(result.substring(inspectedUrl.length))
         } else {
             let prefix = Object.entries(PREFIXES)
                 .find(([key, value]) => key != this.href && this.href.startsWith(key))
 
             if(prefix){
-                result = prefix[1]+result.substring(prefix[0].length)
+                result = document.createTextNode(prefix[1]+this.href.substring(prefix[0].length))
             }
         }
         
         let el = this.shadowRoot.getElementById("link");
-        el.innerHTML = result
-        this.title = this.href
+        el.innerHTML = "";
+        el.appendChild(result);
+        if(!this.parentElement.closest("[title]")){
+            this.title = this.href
+        }
 
         if(this.href.startsWith("df_")){
             el.href = "#"+this.href
