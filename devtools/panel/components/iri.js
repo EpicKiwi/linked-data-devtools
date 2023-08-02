@@ -88,7 +88,7 @@ class IRIElement extends HTMLElement {
         } else if(this.href == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"){
             result = document.createTextNode("a")
         } else if(this.href.startsWith(inspectedUrl) && this.href != inspectedUrl){
-            result = document.createTextNode(result.substring(inspectedUrl.length))
+            result = document.createTextNode(this.href.substring(inspectedUrl.length))
         } else {
             let prefix = Object.entries(PREFIXES)
                 .find(([key, value]) => key != this.href && this.href.startsWith(key))
