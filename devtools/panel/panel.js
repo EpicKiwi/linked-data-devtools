@@ -54,7 +54,7 @@ function initVocab(vocab){
   if(vocab){
     let meta = document.createElement("meta")
     meta.name = "vocab"
-    meta.content = value
+    meta.content = vocab
     document.head.appendChild(meta)
   }
 }
@@ -95,13 +95,16 @@ async function initQuadParsing() {
     setLoading(parsing)
     if (parsing === undefined || parsing) {
       setTimeout(() => pollQuads(cb), 300);
+    } else {
+      updateTransformedData()
     }
     
+    getVocab().then(v => {
+      initVocab(v)
+    })
+
     let prefixesInit = false;
     if(!prefixesInit){
-      getVocab().then(v => {
-        initVocab(v)
-      })
       getPrefixes().then(p => {
         if(!prefixesInit && p){
           initPrefixes(p)
@@ -257,6 +260,11 @@ async function updateTransformedData(){
     let [name, value] = it.getAttribute("content").split(" ", 2);
 
     context[name.replace(":","")] = value
+  }
+
+  let vocabMetaEl = document.querySelector(`meta[name="vocab"]`)
+  if(vocabMetaEl) {
+    context["@vocab"] = vocabMetaEl.content
   }
 
   let json = await jsonld.fromRDF(dataset)

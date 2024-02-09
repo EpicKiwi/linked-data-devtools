@@ -15,12 +15,12 @@ export function parsePrefixes(doc) {
     let thisPrefixes = Object.fromEntries(
       it
         .getAttribute("prefix")
-        .split(" ")
+        .split(/\s/)
         .reduce(
           (acc, it, i, all) =>
             i % 2 == 0 && i + 1 < all.length ? [...acc, [it, all[i + 1]]] : acc,
           []
-        )
+        ).filter(it => it[0].replace(/\s/g, "").trim() != "" && it[1].replace(/\s/g, "").trim() != "")
     );
     prefixes = {...prefixes, ...thisPrefixes}
   }
@@ -29,7 +29,7 @@ export function parsePrefixes(doc) {
 }
 
 export function parseVocab(doc) {
-  doc.querySelector("body[vocab],html[vocab]")?.getAttribute("vocab")
+  return doc.querySelector("body[vocab],html[vocab]")?.getAttribute("vocab")
 }
 
 export function parseDocument(doc, tipleFoundCallback) {
