@@ -43,8 +43,31 @@
 
     <main id="quads"></main>
 
-    <aside>
-        <button id="highlight" title="Highlight RDFa resource elements"><img src="../../icons/highlight.svg" alt="Highlight"></button>
+    <aside class="tool-panel" id="tool-panel" hidden>
+        <nav class="vertical-toolbar">
+            <button id="transform-data-btn" title="Data as JSON-LD">
+                <img src="../../icons/transform.svg" alt="Transform">
+            </button>
+        </nav>
+
+        <main>
+            <form id="transform-options" class="toolbar border-bottom">
+                <input type="checkbox" name="context-sensitive" id="transform-context-sensitive" checked>
+                <label for="transform-context-sensitive" title="Frame data based on selected node" >Context sensitive</label>
+                <p class="filler"></p>
+                <hr>
+                <button type="button" id="download-transformed-data" title="Download JSON-LD">
+                    <img src="../../icons/download.svg" alt="Download">
+                </button>
+            </form>
+            <pre><code id="transformed-data"></code></pre>
+        </main>
+    </aside>
+
+    <footer id="main-toolbar" class="toolbar border-top">
+        <button id="highlight" title="Highlight RDFa resource elements">
+            <img src="../../icons/highlight.svg" alt="Highlight">
+        </button>
         <hr>
         <nav class="filler" id="breadcrumb"></nav>
         <hr>

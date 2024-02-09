@@ -1,7 +1,11 @@
 import { appendQuad } from "./ui.js";
+import "./lib/jsonld.js"
+import datasetFactory from "./lib/rdf-dataset.js"
 
 const w = browser.devtools.inspectedWindow;
 const windowGlobal = `__${browser.runtime.id}`;
+
+let dataset = null;
 
 function setLoading(state) {
   document.getElementById("loading").hidden = !state;
@@ -23,7 +27,7 @@ async function toggleHighlight(){
 document.getElementById("highlight").addEventListener("click", toggleHighlight)
 
 function initPrefixes(prefixes){
-  for(let it of document.querySelectorAll(`meta[name="prefix"`)){
+  for(let it of document.querySelectorAll(`meta[name="prefix"]`)){
     let [name, value] = it.getAttribute("content").split(" ", 2);
 
     if(!prefixes[name] || prefixes[name] != value){
@@ -42,9 +46,24 @@ function initPrefixes(prefixes){
   }
 }
 
+function initVocab(vocab){
+  for(let it of document.querySelectorAll(`meta[name="vocab"]`)){
+    it.remove()
+  }
+
+  if(vocab){
+    let meta = document.createElement("meta")
+    meta.name = "vocab"
+    meta.content = value
+    document.head.appendChild(meta)
+  }
+}
+
 async function initQuadParsing() {
-    document.getElementById("quads").innerHTML = "";
-    document.getElementById("triple-count").textContent = 0;
+  dataset = datasetFactory.dataset([]);
+
+  document.getElementById("quads").innerHTML = "";
+  document.getElementById("triple-count").textContent = 0;
 
   const contentUrl = browser.runtime.getURL("devtools/panel/page-script.js");
   await w.eval(`import("${contentUrl}").then(s => s.init("${windowGlobal}"))`);
@@ -55,6 +74,10 @@ async function initQuadParsing() {
 
   async function getPrefixes() {
     return (await w.eval(`window["${windowGlobal}"].prefixes`))[0];
+  }
+
+  async function getVocab() {
+    return (await w.eval(`window["${windowGlobal}"].vocab`))[0];
   }
 
   async function popQuads() {
@@ -76,6 +99,9 @@ async function initQuadParsing() {
     
     let prefixesInit = false;
     if(!prefixesInit){
+      getVocab().then(v => {
+        initVocab(v)
+      })
       getPrefixes().then(p => {
         if(!prefixesInit && p){
           initPrefixes(p)
@@ -97,25 +123,43 @@ async function initQuadParsing() {
   pollQuads((q) => {
     tripleCount++;
     document.getElementById("triple-count").textContent = tripleCount;
+    dataset.add(q);
     appendQuad(q);
   });
 }
 
 document.getElementById("quads")
-  .addEventListener("click-iri", (e) => {
+  .addEventListener("click-iri", async (e) => {
     let el = document.querySelector(`[data-iri="${e.target.href}"]`);
+
+    let localTarget = null;
+    let directInteraction = false;
+
     if (el && e.target.closest(".entity") != el) {
+      localTarget = e.target.href
+    } else if(el && e.target.closest(".entity h1") != el) {
+      localTarget = e.target.href
+      directInteraction = true;
+    }
+
+    if(localTarget) {
       e.preventDefault();
-      navigateToIRI(e.target.href);
+      if(document.querySelector(`[data-iri].selected`)?.dataset.iri == localTarget){
+        deselectIRI()
+      } else {
+        navigateToIRI(localTarget, !directInteraction);
+      }
     }
   });
 
 browser.devtools.network.onNavigated.addListener(() => {
   initQuadParsing();
   initHighlighting();
+  updateTransformedData();
 });
 initQuadParsing();
 initHighlighting();
+updateTransformedData();
 
 browser.devtools.panels.elements.onSelectionChanged.addListener(() => {
     w.eval(`(() => {
@@ -141,13 +185,17 @@ function selectIRI(iri){
     const elFound = document.querySelector(`[data-iri="${iri}"]`);
     elFound?.classList.add("selected")
     elFound?.scrollIntoView({behavior: "auto"})
+    updateTransformedData();
 }
 
-function navigateToIRI(iri){
+function navigateToIRI(iri, scrollTo = true){
     clearSelection()
     const elFound = document.querySelector(`[data-iri="${iri}"]`);
     elFound?.classList.add("selected")
-    elFound?.scrollIntoView({behavior: "smooth"});
+    if(scrollTo){
+      elFound?.scrollIntoView({behavior: "smooth"});
+    }
+    updateTransformedData();
 }
 
 function clearSelection(){
@@ -157,5 +205,74 @@ function clearSelection(){
 }
 
 function deselectIRI(){
-    clearSelection()
+    clearSelection();
+    updateTransformedData();
+}
+
+document.getElementById("transform-data-btn").addEventListener("click", e => {
+  if( document.getElementById("transform-data-btn").classList.contains("active") ){
+    document.getElementById("transform-data-btn").classList.remove("active")
+    document.getElementById("tool-panel").hidden = true
+  } else {
+    openTransformPanel()
+  }
+})
+
+document.getElementById("transform-context-sensitive").addEventListener("change", () => {
+  updateTransformedData()
+})
+
+document.getElementById("transform-options").addEventListener("submit", e => {
+  e.preventDefault()
+  updateTransformedData()
+})
+
+document.getElementById("download-transformed-data").addEventListener("click", () => {
+  let json = document.getElementById("transformed-data").textContent;
+  let url = `data:application/json;base64,${btoa(json)}`
+  window.open(url, "_blank")
+})
+
+function openTransformPanel(){
+  document.getElementById("transform-data-btn").classList.add("active")
+  document.getElementById("tool-panel").hidden = false;
+  updateTransformedData()
+}
+
+async function updateTransformedData(){
+  async function getLocation() {
+    return (await w.eval(`document.body.baseURI`))[0];
+  }
+
+  let codeEl = document.getElementById("transformed-data");
+  let configData = new FormData(document.getElementById("transform-options"));
+  
+  let base = new URL(await getLocation());
+
+  let context = {
+    "@base": base.toString()
+  };
+
+  for(let it of document.querySelectorAll(`meta[name="prefix"]`)){
+    let [name, value] = it.getAttribute("content").split(" ", 2);
+
+    context[name.replace(":","")] = value
+  }
+
+  let json = await jsonld.fromRDF(dataset)
+  if(configData.get("context-sensitive")){
+    let selectedEl = document.querySelector(`[data-iri].selected`)
+    if(selectedEl) {
+      base = new URL(selectedEl.dataset.iri, base)
+    }
+
+    json = await jsonld.frame(json, {
+      "@context": context,
+      "@id": base.toString()
+    })
+  } else {
+    json = await jsonld.compact(json, context)
+  }
+
+  codeEl.textContent = JSON.stringify(json, null, 4)
 }

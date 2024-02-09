@@ -28,6 +28,10 @@ export function parsePrefixes(doc) {
   return prefixes;
 }
 
+export function parseVocab(doc) {
+  doc.querySelector("body[vocab],html[vocab]")?.getAttribute("vocab")
+}
+
 export function parseDocument(doc, tipleFoundCallback) {
   const parser = new RDFa.RdfaParser({
     baseIRI: doc.documentElement.baseURI,
@@ -52,10 +56,12 @@ export function init(windowGlobalName) {
     parsingInProgress: false,
     prefixes: {},
     quads: [],
+    vocab: null
   });
 
   w.parsingInProgress = true;
   w.prefixes = parsePrefixes(document);
+  w.vocab = parseVocab(document);
   parseDocument(document, (q) => w.quads.push(q)).finally(
     () => (w.parsingInProgress = false)
   );
