@@ -24,6 +24,10 @@ body > main {
     flex: 1;
 }
 
+body > #loading:not([hidden]) + main {
+    padding-top: 27px;
+}
+
 /* Aside toolbar */
 
 aside {
@@ -132,4 +136,29 @@ main {
 
 .entity .attributes ext-iri.object {
     color: #dd00a9;
+}
+
+/* loading bar */
+
+#loading {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+
+    margin: 0;
+    accent-color: #0074e8;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+#loading progress {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    display: block;
+}
+
+#loading[hidden] {
+    display: none;
 }

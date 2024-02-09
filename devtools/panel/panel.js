@@ -3,6 +3,10 @@ import { appendQuad } from "./ui.js";
 const w = browser.devtools.inspectedWindow;
 const windowGlobal = `__${browser.runtime.id}`;
 
+function setLoading(state) {
+  document.getElementById("loading").hidden = !state;
+}
+
 async function initHighlighting(){
     await w.eval(`(() => {
         const styleEl = document.createElement("style")
@@ -65,6 +69,7 @@ async function initQuadParsing() {
 
   async function pollQuads(cb) {
     const parsing = await isParsing();
+    setLoading(parsing)
     if (parsing === undefined || parsing) {
       setTimeout(() => pollQuads(cb), 300);
     }
