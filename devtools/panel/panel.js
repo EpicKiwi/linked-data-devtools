@@ -155,14 +155,17 @@ document.getElementById("quads")
     }
   });
 
-browser.devtools.network.onNavigated.addListener(() => {
-  initQuadParsing();
-  initHighlighting();
-  updateTransformedData();
+browser.devtools.network.onNavigated.addListener(async () => {
+  await Promise.all([
+    initQuadParsing(),
+    initHighlighting()
+  ]);
+  await updateTransformedData();
 });
-initQuadParsing();
-initHighlighting();
-updateTransformedData();
+Promise.all([
+  initQuadParsing(),
+  initHighlighting()
+]).then(() => updateTransformedData())
 
 browser.devtools.panels.elements.onSelectionChanged.addListener(() => {
     w.eval(`(() => {
@@ -283,4 +286,7 @@ async function updateTransformedData(){
   }
 
   codeEl.textContent = JSON.stringify(json, null, 4)
+
+  let evCode = `window.$ld = JSON.parse(decodeURIComponent("${encodeURIComponent(JSON.stringify(json))}"))`
+  await w.eval(evCode)
 }

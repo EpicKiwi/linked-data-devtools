@@ -61,6 +61,11 @@ class IRIElement extends HTMLElement {
             let [name, prefix] = el.getAttribute("content").split(" ", 2)
             PREFIXES[prefix] = name
         }
+
+        let vocabEl = document.querySelector(`meta[name="vocab"]`)
+        if(vocabEl && vocabEl.getAttribute("content")){
+            PREFIXES[vocabEl.getAttribute("content")] = ""
+        }
     }
 
     async updateContent(){

@@ -52,6 +52,8 @@ export function parseDocument(doc, tipleFoundCallback) {
 }
 
 export function init(windowGlobalName) {
+  window.$ld = null;
+
   const w = (window[windowGlobalName] = {
     parsingInProgress: false,
     prefixes: {},
